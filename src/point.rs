@@ -9,14 +9,14 @@ pub mod coordinate{
             Point{
                 x,
                 y,
-                is_active:true
+                is_active:false
             }
         }
         pub fn from() -> Point{
             Point{
                 x:0,
                 y:0,
-                is_active:true
+                is_active:false
             }
         }
         pub fn on_board(&self) -> bool{
@@ -27,6 +27,9 @@ pub mod coordinate{
         }
         pub fn show(&self){
             println!("x: {}, y: {} is_active: {}",self.x,self.y,self.is_active);
+        }
+        pub fn repr(&self) -> String {
+            format!("({},{})", self.x, self.y)
         }
     }
 }

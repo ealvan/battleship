@@ -1,4 +1,10 @@
 pub mod pieces{
+    pub enum Direction{
+        UP,//⬆️
+        DOWN,//⬇️
+        LEFT,//⬅️
+        RIGHT//➡️
+    }
     pub enum Piece{
         CARRIER,
         BATTLESHIP,
@@ -15,6 +21,9 @@ pub mod pieces{
                 Piece::SUBMARINE => 3,
                 Piece::DESTROYER => 2,
             }
+        }
+        pub fn rotate(&self) -> (){
+
         }
 
     }

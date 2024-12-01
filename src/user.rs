@@ -5,7 +5,7 @@ pub mod account{
     use super::Piece;
     use super::Table;
     use super::Point;
-    
+    use rand::Rng;
     pub struct User{
         pub name: String,
         pub my_turn: bool,
@@ -30,6 +30,11 @@ pub mod account{
             }else{
                 println!("The point cant be in the board!");
             }
+        }
+        pub fn draw_piece(&self, p: &Piece, table: &Table) {
+            let x_root_index = rand::thread_rng().gen_range(0..table.columns);
+            let y_root_index = rand::thread_rng().gen_range(0..table.rows);
+
         }
         pub fn get_lives(&self) -> i8{
             self.n_lives

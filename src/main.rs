@@ -21,11 +21,12 @@ fn main() {
     );
     user.show();
     let table = Table::new(8,12);
-    let mut i = 0;
-    for p in table.space{
-        println!("{i}");
-        p.show();
-        i+=1;
-    }
-    
+    table.show();
+    // let a = table.get_point(0,0);
+    // a.show();
+    // let range = table.space.get(0..2).expect("Your range cant be reached in this table");
+    // for p in range{
+    //     p.show();
+    // }
+
 }

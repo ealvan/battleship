@@ -1,5 +1,4 @@
 pub mod board{
-    use core::error;
 
     use crate::point::coordinate::Point;
     pub struct Table{
@@ -22,7 +21,7 @@ pub mod board{
             //and static function(general function)
             let capacity = self.columns*self.rows;
             for i in 0..capacity{
-                self.space.push(Point::new(0,0));
+                self.space.push(self.create_point_by_index(i));
             }
         }
         pub fn from_point(self,x:i8,y:i8) -> Point{
@@ -38,6 +37,34 @@ pub mod board{
         }
         pub fn can_hold(&self, p: &Point) -> bool{
             p.is_valid() && p.x < self.rows && p.y < self.columns
+        }
+        pub fn get_point_by_index(&self, k:i8) -> &Point{
+            let x = k/self.columns;
+            let y = k%self.columns;
+            self.get_point(x,y)
+        }
+        pub fn create_point_by_index(&self, k:i8) -> Point{
+            let x = k / self.columns;
+            let y = k % self.columns;
+            Point::new(x,y)
+        }
+        pub fn show(&self) -> () {
+            //0..7
+            //7..14
+            let mut index = 0;
+            println!("Working to show a beautiful table");
+            for _row in 0..self.rows{
+                let current_row = self.space.get(index..index+usize::from(self.columns as u8)).expect("Error getting the table slice");
+                let repr_row = current_row
+                    .iter()
+                    .fold(
+                        String::new(), 
+                        | acc, item| 
+                        format!("{}..{}",acc, item.repr())
+                    );
+                println!("{}",repr_row);
+                index += self.columns as usize;
+            }
         }
         // pub fn get_space(&self){
             
