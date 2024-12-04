@@ -1,4 +1,6 @@
+use crate::items::pieces::Direction;
 pub mod coordinate{
+    use super::Direction;
     pub struct Point{
         pub x: i8,
         pub y:i8,
@@ -30,6 +32,17 @@ pub mod coordinate{
         }
         pub fn repr(&self) -> String {
             format!("({},{})", self.x, self.y)
+        }
+        pub fn get_position(&self) -> (i8,i8){
+            (self.x,self.y)
+        }
+        pub fn get_next(&self,dir: &Direction) -> Point{
+            let vector = dir.get_vector();
+            Point{
+                x: self.x - vector.0,
+                y: self.y + vector.1,
+                is_active: false
+            }
         }
     }
 }
