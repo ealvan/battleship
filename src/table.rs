@@ -37,6 +37,13 @@ pub mod board{
             }
             Ok(self.space.get(value).unwrap())
         }
+        pub fn get_mut_point(&mut self, x:i8, y:i8) -> Result<&mut Point, String>{
+            let value = (x as usize*usize::from(self.columns) + y as usize);
+            if value > self.space.len(){
+                return Err(format!("Coordinate {},{} maps out of range to {} in {} spots",x,y,value,self.space.len()));
+            }
+            Ok(self.space.get_mut(value).unwrap())
+        }
         pub fn can_hold(&self, p: &Point) -> bool{
             p.is_valid() && p.x < self.rows as i8 && p.y < self.columns as i8
         }
@@ -52,6 +59,14 @@ pub mod board{
             let x =( k / self.columns) as i8;
             let y = (k % self.columns) as i8;
             Point::new(x,y)
+        }
+        pub fn change_state(&mut self,points: Vec<(i8,i8)>){
+            
+            for point in points{
+                if let Ok(point) = self.get_mut_point(point.0,point.1){
+                    point.is_active = true;
+                };
+            }
         }
         pub fn show(&self) -> () {
             //0..7
@@ -69,8 +84,8 @@ pub mod board{
                         | acc, item| 
                         {
                             let spot = match item.is_active {
-                                true => format!("▧"),
-                                false => format!("□"),
+                                true => format!("▩"),
+                                false => format!("⬚"),
                             };
                             format!("{acc} {spot}")
                         })

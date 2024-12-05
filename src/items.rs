@@ -12,12 +12,18 @@ pub mod pieces{
         DOWN_LEFT,//-1,-1
         DOWN_RIGHT,//-1,1
     }
+    pub const CARRIER_SPOTS : usize = 5;
+    pub const BATTLESHIP_SPOTS : usize = 4;
+    pub const CRUISER_SPOTS : usize = 3;
+    pub const SUBMARINE_SPOTS : usize = 3;
+    pub const DESTROYER_SPOTS : usize = 2;
+
     pub enum Piece<'a>{
-        CARRIER([&'a Point;5]),
-        BATTLESHIP([&'a Point;4]),
-        CRUISER([&'a Point;3]),
-        SUBMARINE([&'a Point;3]),
-        DESTROYER([&'a Point;2]),
+        CARRIER(Vec<&'a Point>),
+        BATTLESHIP(Vec<&'a Point>),
+        CRUISER(Vec<&'a Point>),
+        SUBMARINE(Vec<&'a Point>),
+        DESTROYER(Vec<&'a Point>),
     }
     impl<'a> Piece<'a>{
         pub fn get_spots(&self) -> u8{

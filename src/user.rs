@@ -1,8 +1,12 @@
 use crate::items::pieces::{Piece,Direction};
 use crate::table::board::Table;
 use crate::point::coordinate::Point;
+
 pub mod account{
     use core::panic;
+    use std::primitive;
+    use super::utils::to_array;
+    use crate::point;
 
     use super::{Piece,Direction};
     use super::Table;
@@ -40,39 +44,51 @@ pub mod account{
             let random_spot = rand::thread_rng().gen_range(0..free_spots.len());
             Some(free_spots.get(random_spot).unwrap())
         }
-        pub fn draw_from_root_point(table: &'a Table, spots: i8) -> Vec<&'a Point>{
+        pub fn points_from_root_point(table: &'a mut Table, spots: i8) -> Result<Vec<&'a Point>, String>{
             //just returns an array with the spots
             let directions = Direction::get_directions();
-                if let Some(free_spot) = User::find_free_point(table){
-                    for direction in directions{
-                        let vec = direction.get_vector();
-                        print!("Free spot: "); free_spot.show();
-                        let end_position = (free_spot.x + vec.0*(spots-1), free_spot.y + vec.1*(spots-1));
-                        let end_point = Point::new(end_position.0 ,end_position.1);
-                        if table.can_hold(&end_point) == true {
-                            let mut points: Vec<&Point> = Vec::new();
-                            points.push(free_spot);
-                            let mut next_position = (free_spot.x, free_spot.y);
-                            for time in 0..spots-1{
-                                let next_point = (next_position.0 + vec.0, next_position.1 + vec.1);
-                                let ref_point = match table.get_point(next_point.0, next_point.1){
-                                    Ok(res) => res,
-                                    Err(why) => panic!("{why}"),                                
-                                };
-                                points.push(ref_point);
-                                next_position = next_point;
-                            }
-                            return points;
-                        }else{
-                            println!("Endpoint ({},{}), cant hold in table",end_point.x,end_point.y)
+            let mut primitive_points = vec![];
+            //the free pointcan be a parameter
+            if let Some(free_spot) = User::find_free_point(table){
+                for direction in directions{
+                    let vec = direction.get_vector();
+                    print!("Free spot: "); free_spot.show();
+                    let end_position = (free_spot.x + vec.0*(spots-1), free_spot.y + vec.1*(spots-1));
+                    let end_point = Point::new(end_position.0 ,end_position.1);
+                    if table.can_hold(&end_point) == true {
+                        let mut points: Vec<&Point> = Vec::new();
+                        points.push(free_spot);
+                        let mut next_position = (free_spot.x, free_spot.y);
+                        primitive_points.push(next_position);
+
+                        for _time in 0..spots-1{
+                            let next_point = (next_position.0 + vec.0, next_position.1 + vec.1);
+                            primitive_points.push(next_point);
+                            let ref_point = match table.get_point(next_point.0, next_point.1){
+                                Ok(res) => {
+                                    // res.is_active = true;
+                                    res
+                                    // let inmut_res = &*res;
+                                    // inmut_res
+                                },
+                                Err(why) => panic!("{why}"),                                
+                            };
+                            points.push(ref_point);
+                            next_position = next_point;
                         }
+                                          
+                        return Ok(points);
+                    }else{
+                        println!("Endpoint ({},{}), cant hold in table",end_point.x,end_point.y);
+                        break;
+                    }
                 }
                     // let new_position = (free_spot.x as i8 + vec.0, free_spot.y as i8 + vec.1);
                     // let new_point = Point::new(new_position.0,new_position.1);
-                }else{
-                    panic!("There are any free spots to draw");
-                }   
-            panic!("It could figure out a new position");
+            }else{
+                panic!("There are any free spots to draw");
+            }   
+            table.change_state(primitive_points);
         }
         pub fn attack(&self, table: &Table, point: &Point){
             if table.can_hold(point){
@@ -81,11 +97,21 @@ pub mod account{
                 println!("The point cant be in the board!");
             }
         }
-        pub fn draw_piece(&self, p: &Piece, table: &Table) {
-            let x_root_index = rand::thread_rng().gen_range(0..table.columns);
-            let y_root_index = rand::thread_rng().gen_range(0..table.rows);
-            let spots = p.get_spots();
-            println!("Working to draw a piece on table");
+        pub fn draw_piece(& mut self, table: &'a mut Table, n: i8) {
+            if let Ok(vec_points) = User::points_from_root_point(table,n){
+                let piece = match n {
+                    4 => Piece::BATTLESHIP(vec_points),
+                    5 => Piece::CARRIER(vec_points),
+                    3 => Piece::CRUISER(vec_points),
+                    2 => Piece::SUBMARINE(vec_points),
+                    _ => panic!("Error in spots available for pieces")
+                };
+                self.pieces.push(piece);
+            }
+            // let x_root_index = rand::thread_rng().gen_range(0..table.columns);
+            // let y_root_index = rand::thread_rng().gen_range(0..table.rows);
+            // let spots = p.get_spots();
+            // println!("Working to draw a piece on table");
         }
         
         pub fn get_lives(&self) -> u8{
@@ -99,5 +125,14 @@ pub mod account{
             println!("{data}");
         }
 
+    }
+}
+
+pub mod utils{
+    use std::convert::TryInto;
+
+    pub fn to_array<T, const N: usize>(v: Vec<T>) -> [T; N] {
+        v.try_into()
+            .unwrap_or_else(|v: Vec<T>| panic!("Expected a Vec of length {} but it was {}", N, v.len()))
     }
 }
