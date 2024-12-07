@@ -1,6 +1,6 @@
 pub mod board{
 
-    use crate::point::coordinate::Point;
+    use crate::{items::pieces::Direction, point::coordinate::Point};
     pub struct Table{
         pub rows: u8,
         pub columns: u8,
@@ -33,7 +33,7 @@ pub mod board{
         pub fn get_point(&self,x:i8,y:i8) -> Result<&Point, String>{
             let value = (x as usize*usize::from(self.columns) + y as usize);
             if value > self.space.len(){
-                return Err(format!("Coordinate {},{} maps out of range to {} in {} spots",x,y,value,self.space.len()));
+                return Err(format!("Coordinate ({},{}) maps out of range to {} in {} spots",x,y,value,self.space.len()));
             }
             Ok(self.space.get(value).unwrap())
         }
@@ -47,6 +47,13 @@ pub mod board{
         pub fn can_hold(&self, p: &Point) -> bool{
             p.is_valid() && p.x < self.rows as i8 && p.y < self.columns as i8
         }
+        pub fn can_put(&self, p: &Point) -> bool{
+            if self.can_hold(p) == false{
+                return false;
+            }
+            let p = self.get_point(p.x,p.y).unwrap();
+            p.is_active != true
+        }
         pub fn get_point_by_index(&self, k:i8) -> &Point{
             let x = k/self.columns as i8;
             let y = k%self.columns as i8;
@@ -54,6 +61,16 @@ pub mod board{
                 Ok(point) => point,
                 Err(why) => panic!("This index is out of range {why}")
             }
+        }
+        pub fn can_be_road(&self, from: (i8,i8), to : (i8,i8), spots: i8, direction: &Direction) -> Result<Vec<Point>,String>{
+            let mut point_origin = Point::new(from.0, from.1);
+            let mut point_final = Point::new(to.0, to.1);
+            if self.can_put(&point_origin) && self.can_put(&point_final) {
+                todo!();
+            }else{
+                Err(format!("the road is not feasible"))
+            }
+
         }
         pub fn create_point_by_index(&self, k:u8) -> Point{
             let x =( k / self.columns) as i8;

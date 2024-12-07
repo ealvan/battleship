@@ -13,11 +13,11 @@ pub mod pieces{
         DOWN_LEFT,//-1,-1
         DOWN_RIGHT,//-1,1
     }
-    pub const CARRIER_SPOTS : usize = 5;
-    pub const BATTLESHIP_SPOTS : usize = 4;
-    pub const CRUISER_SPOTS : usize = 3;
-    pub const SUBMARINE_SPOTS : usize = 3;
-    pub const DESTROYER_SPOTS : usize = 2;
+    pub const CARRIER_SPOTS : i8 = 5;
+    pub const BATTLESHIP_SPOTS : i8 = 4;
+    pub const CRUISER_SPOTS : i8 = 3;
+    pub const SUBMARINE_SPOTS : i8 = 3;
+    pub const DESTROYER_SPOTS : i8 = 2;
 
     pub enum Piece{
         CARRIER(Vec<Point>),
@@ -36,10 +36,29 @@ pub mod pieces{
                 Piece::DESTROYER(spots) => spots.len() as u8,
             }
         }
-        pub fn rotate(&self) -> (){
-
+        pub fn get_label(&self) -> String{
+            match self{
+                Piece::CARRIER(_) => "CARRIER".to_string(),
+                Piece::BATTLESHIP(_) => "BATTLESHIP".to_string(),
+                Piece::CRUISER(_) => "CRUISER".to_string(),
+                Piece::SUBMARINE(_) => "SUBMARINE".to_string(),
+                Piece::DESTROYER(_) => "DESTROYER".to_string(),
+            }
         }
-
+        pub fn rotate(&self) -> (){
+        }
+    }
+    pub fn get_pieces_spots() -> [i8;5]{
+        let mut spots = [
+            CARRIER_SPOTS,
+            BATTLESHIP_SPOTS,
+            CRUISER_SPOTS,
+            SUBMARINE_SPOTS,
+            DESTROYER_SPOTS
+        ];
+        let mut rng = rand::thread_rng();
+        spots.shuffle(& mut rng);
+        spots
     }
     impl Direction{
         pub fn get_vector(&self) -> (i8,i8){
