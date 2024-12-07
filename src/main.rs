@@ -36,7 +36,8 @@ fn main(){
     // }
     
     let mut user = User::new("Pipo".to_string());
-    user.draw_piece(&t, 5);
+    user.draw_piece(&mut t, 5);
+    user.draw_piece(&mut t, 3);
     let mut points;
     for piece in user.pieces{               
         points = match piece{

@@ -1,7 +1,8 @@
 use crate::point::coordinate::Point;
-
 pub mod pieces{
     use super::Point;
+    use rand::seq::SliceRandom;
+    use rand::prelude::*;
     pub enum Direction{
         UP,//⬆️
         DOWN,//⬇️
@@ -18,14 +19,14 @@ pub mod pieces{
     pub const SUBMARINE_SPOTS : usize = 3;
     pub const DESTROYER_SPOTS : usize = 2;
 
-    pub enum Piece<'a>{
-        CARRIER(Vec<&'a Point>),
-        BATTLESHIP(Vec<&'a Point>),
-        CRUISER(Vec<&'a Point>),
-        SUBMARINE(Vec<&'a Point>),
-        DESTROYER(Vec<&'a Point>),
+    pub enum Piece{
+        CARRIER(Vec<Point>),
+        BATTLESHIP(Vec<Point>),
+        CRUISER(Vec<Point>),
+        SUBMARINE(Vec<Point>),
+        DESTROYER(Vec<Point>),
     }
-    impl<'a> Piece<'a>{
+    impl Piece{
         pub fn get_spots(&self) -> u8{
             match self{
                 Piece::CARRIER(spots) => spots.len() as u8,
@@ -54,7 +55,7 @@ pub mod pieces{
             }
         }
         pub fn get_directions() -> [Direction;8]{
-            [
+            let mut dirs = [
                 Direction::DOWN ,
                 Direction::UP ,
                 Direction::LEFT ,
@@ -63,7 +64,10 @@ pub mod pieces{
                 Direction::UP_LEFT ,
                 Direction::DOWN_LEFT ,
                 Direction::DOWN_RIGHT 
-            ]
+            ];
+            let mut rng = rand::thread_rng();
+            dirs.shuffle(&mut rng);
+            dirs
         }
     }
 }
