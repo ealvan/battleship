@@ -88,7 +88,7 @@ pub mod account{
                 print!("Free spot: "); free_spot.show();
                 println!("Spots: {}",spots);
                 let mut next_position = (free_spot.x, free_spot.y);
-                primitive_points.push(next_position);
+                primitive_points.push(next_position);//to do: check if can_put() on table
                 for direction in directions.iter(){
                     let vec = direction.get_vector();
                     /*
@@ -119,6 +119,7 @@ pub mod account{
                             }                        
                         }
                         if flag == true{
+                            flag=false;
                             continue;
                         }                        
                         flag = false;
