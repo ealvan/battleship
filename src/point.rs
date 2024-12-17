@@ -14,10 +14,10 @@ pub mod coordinate{
                 is_active:false
             }
         }
-        pub fn from() -> Point{
+        pub fn from(p: &Point) -> Point{
             Point{
-                x:0,
-                y:0,
+                x:p.x,
+                y:p.y,
                 is_active:false
             }
         }
@@ -43,6 +43,9 @@ pub mod coordinate{
                 y: self.y + vector.1,
                 is_active: false
             }
+        }
+        pub fn is_equal(&self, point: &Point) -> bool{
+            point.x == self.x && point.y == self.y
         }
     }
 }

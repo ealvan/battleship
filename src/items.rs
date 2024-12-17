@@ -2,7 +2,6 @@ use crate::point::coordinate::Point;
 pub mod pieces{
     use super::Point;
     use rand::seq::SliceRandom;
-    use rand::prelude::*;
     pub enum Direction{
         UP,//⬆️
         DOWN,//⬇️
@@ -35,6 +34,15 @@ pub mod pieces{
                 Piece::SUBMARINE(spots) => spots.len() as u8,
                 Piece::DESTROYER(spots) => spots.len() as u8,
             }
+        }
+        pub fn get_points(&self) -> &Vec<Point>{
+            match self{
+                Piece::CARRIER(spots) => spots,
+                Piece::BATTLESHIP(spots) => spots,
+                Piece::CRUISER(spots) => spots,
+                Piece::SUBMARINE(spots) => spots,
+                Piece::DESTROYER(spots) => spots,
+            }            
         }
         pub fn get_label(&self) -> String{
             match self{

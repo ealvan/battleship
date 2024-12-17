@@ -16,20 +16,34 @@ pub mod account{
         pub my_turn: bool,
         pub pieces: Vec<Piece>,
         pub n_lives: u8,//the number spots of your pieces are your lives
-        pub give_up: bool
+        pub give_up: bool,
+        pub character: String,
     }
     impl User{
         //maybe add an array with how many pieces, by default would be 1
         pub fn new(name: String) ->  User{
             // let lives = pieces.iter().map(|piece| piece.get_spots()).sum();
             User{
-                n_lives: 0,
+                n_lives: get_pieces_spots().iter().sum::<i8>() as u8,
                 name,
                 pieces : vec![],
                 my_turn:false,
-                give_up:false
+                give_up:false,
+                character: String::from("▤"),
             }
         }
+        pub fn new_with_char(name: String, character: String) ->  User{
+            // let lives = pieces.iter().map(|piece| piece.get_spots()).sum();
+            User{
+                n_lives: get_pieces_spots().iter().sum::<i8>() as u8,
+                name,
+                pieces : vec![],
+                my_turn:false,
+                give_up:false,
+                character,
+            }
+        }
+        
         pub fn draw_pieces(&mut self, t: &mut Table) {
             let spots = get_pieces_spots();
             for n in spots{
@@ -52,10 +66,10 @@ pub mod account{
             Some(free_spots.get(random_spot).unwrap())
         }
         pub fn draw_piece(& mut self, table: & mut Table, n: i8) {
-            println!("Outside draw piece");
+            // println!("Outside draw piece");
             match User::points_from_root_point(table,n) {
                 Ok(vec_points) => {
-                    println!("Inside draw piece");
+                    // println!("Inside draw piece");
                     let piece = match vec_points.len() {
                         4 => Piece::BATTLESHIP(vec_points),
                         5 => Piece::CARRIER(vec_points),
@@ -74,93 +88,87 @@ pub mod account{
         }
 
         pub fn points_from_root_point(table: & mut Table, spots: i8) -> Result<Vec<Point>, String>{
-            //just returns an array with the spots
             let directions = Direction::get_directions();
-            let mut primitive_points = vec![];
-            //the free pointcan be a parameter
             let opportunities = 10;
-            let mut flag = false;
             for _time in 0..opportunities{
                 let free_spot = match User::find_free_point(table){
                     Some(point) => point,
-                    None => panic!("There are any spots free")
+                    None => panic!("There are any free spots")
                 };
-                print!("Free spot: "); free_spot.show();
-                println!("Spots: {}",spots);
-                let mut next_position = (free_spot.x, free_spot.y);
-                primitive_points.push(next_position);//to do: check if can_put() on table
                 for direction in directions.iter(){
-                    let vec = direction.get_vector();
-                    /*
-                        root_pos : next_position
-                        vector: vec
-                        spots: spots
-                    */
-                    let mut next_point = Point::new(next_position.0,next_position.1);
-
-                    let end_position = (free_spot.x + vec.0*(spots-1), free_spot.y + vec.1*(spots-1));
-                    let end_point = Point::new(end_position.0 ,end_position.1);
-                    end_point.show();
-
-                    if table.can_put(&end_point) == true{
-
-                        println!("ENTROOO");
-                        for _time in 0..spots-1{
-                            let tmp_next_pos = (next_position.0 + vec.0, next_position.1 + vec.1);
-                            next_point.x = tmp_next_pos.0;
-                            next_point.y = tmp_next_pos.1;
-                            if table.can_put(&next_point){
-                                primitive_points.push(tmp_next_pos);
-                                next_position = tmp_next_pos;
-                                flag=false;
-                            }else{
-                                flag=true;
-                                break;
-                            }                        
-                        }
-                        if flag == true{
-                            flag=false;
-                            continue;
-                        }                        
-                        flag = false;
-                        break;
-                    }else{
-                        flag = true;
-                    }
-                }
-                if flag == false{
-                    break;
-                }
+                    match table.can_be_road((free_spot.x, free_spot.y), spots, direction){
+                        Ok(points) => {
+                            table.change_state(points.iter().collect());
+                            return Ok(points);
+                        },
+                        Err(_) => continue,
+                    };
+                }  
             }
-            if flag{
-                return Err(format!("Any directions were sufficient to draw from root point"));
-            }
-            let points = primitive_points.iter().map(|item|  Point{x:item.0,y:item.1, is_active:true}).collect::<Vec::<Point>>();
-            println!("gigigigig");
-            println!("{:?}", primitive_points);
-
-            table.change_state(primitive_points);
-            // for priv_point in primitive_points{
-            //     match table.get_mut_point(priv_point.0, priv_point.1){
-            //         Ok(point) => {
-            //             point.is_active = true;
-            //         },
-            //         Err(why) => panic!("{why}") 
-            //     };
-            // }
-                // let new_position = (free_spot.x as i8 + vec.0, free_spot.y as i8 + vec.1);
-                // let new_point = Point::new(new_position.0,new_position.1);
-            return Ok(points);
+            return Err(format!("Any directions were sufficient to draw from root point"));
         }
-        pub fn attack(&self, table: &Table, point: &Point){
+        fn check_hit(&self, point: &Point) -> bool{
+            //just check if I hit myself
+            for piece in self.pieces.iter(){
+                for p in piece.get_points(){
+                    if point.is_equal(p){
+                        return true;
+                    }
+
+                }
+            }
+            false
+        }
+        pub fn attack(&mut self, table: &mut Table, point: &Point,attacked_points: &mut Vec<Point>, enemy: &mut User){
             if table.can_hold(point){
-                println!("Attacking...");
+                println!("Attacking...⛝ coord: {}",point.repr());
+
+                let point = match table.get_mut_point(point.x, point.y){
+                    Ok(val) => val,
+                    Err(why) => panic!("{why}")
+                };
+                if point.is_active{
+                    //I hit a piece is it mine or the enemy haha
+                    if self.check_hit(point){
+                        if self.n_lives == 0{
+                            println!("Your enemy {} wins!!", enemy.name);
+                            return;
+                        }else{
+                            println!("You hit on the foot");
+                            self.n_lives = self.n_lives -1;
+                            let n = Point::from(point);
+                            attacked_points.push(n);
+                        }
+                    }
+                    for p in attacked_points.iter(){
+                        if point.is_equal(p){
+                            println!("You hit an already hitted spot");
+                        }
+                    }
+                    if enemy.check_hit(point){
+                        if self.n_lives == 0{
+                            println!("Your enemy {} wins!!", self.name);
+                            return;
+                        }else{
+                            println!("You have nailed!");
+                            enemy.n_lives = enemy.n_lives -1;
+                            let n = Point::from(point);
+                            attacked_points.push(n);
+                        }
+                    }
+                }else{
+                    println!("You hit nothing!");
+                    point.is_active = true;
+                    let p = Point::from(point);
+                    attacked_points.push(p);
+                }
             }else{
                 println!("The point cant be in the board!");
             }
         }
-
-        
+        pub fn prompt_lives(&self){
+            println!("You have {} lives left",self.n_lives);
+        }
         pub fn get_lives(&self) -> u8{
             self.n_lives
         }
